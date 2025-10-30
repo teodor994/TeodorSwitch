@@ -34,6 +34,19 @@ BASE_FORMATS = {
         "rtable": "rtable{}.txt"
 }
 
+# least significant two bytes of MAC addresses for h0-5
+mac_bits = [
+    (3, 5),  # h0
+    (2, 7),  # h1
+    (5, 3),  # h2
+    (1, 9),  # h3
+    (7, 2),  # h4
+    (9, 1),  # h5
+]
 
 def get(value, first=None, second=None):
+    # small hack; works only for our 2-2-2 host topology
+    if value == "host_mac":
+        return 'de:ad:be:ef:%02x:%02x' % mac_bits[first]
+
     return BASE_FORMATS[value].format(first, second)
