@@ -17,7 +17,7 @@ def parse_ethernet_header(data):
 
     vlan_id = -1
     vlan_tci = -1
-    # Check for VLAN tag (0x8100 in network byte order is b'\x81\x00')
+    # Check for VLAN tag (0x8200 in network byte order is b'\x82\x00')
     if ether_type == 0x8200:
         vlan_tci = int.from_bytes(data[14:16], byteorder='big')
         vlan_id = vlan_tci & 0x0FFF  # extract the 12-bit VLAN ID
