@@ -62,6 +62,8 @@ def main():
     for i in interfaces:
         print(get_interface_name(i))
 
+    MAC_table = {}
+
     while True:
         # Note that data is of type bytes([...]).
         # b1 = bytes([72, 101, 108, 108, 111])  # "Hello"
@@ -71,20 +73,39 @@ def main():
 
         dest_mac, src_mac, ethertype, vlan_id, vlan_tci = parse_ethernet_header(data)
 
+        unicast = (dest_mac[0] & 1) == 0
+
         # Print the MAC src and MAC dst in human readable format
-        dest_mac = ':'.join(f'{b:02x}' for b in dest_mac)
-        src_mac = ':'.join(f'{b:02x}' for b in src_mac)
+        dest_mac_string = ':'.join(f'{b:02x}' for b in dest_mac)
+        src_mac_string = ':'.join(f'{b:02x}' for b in src_mac)
 
         # Note. Adding a VLAN tag can be as easy as
         # tagged_frame = data[0:12] + create_vlan_tag(5, 10) + data[12:]
 
-        print(f'Destination MAC: {dest_mac}')
-        print(f'Source MAC: {src_mac}')
+        print(f'Destination MAC: {dest_mac_string}')
+        print(f'Source MAC: {src_mac_string}')
         print(f'EtherType: {ethertype}')
 
         print("Received frame of size {} on interface {}".format(length, interface), flush=True)
 
         # TODO: Implement forwarding with learning
+
+        MAC_table[src_mac_string] = interface
+
+        if unicast == True:
+            if dest_mac_string in MAC_table:
+                send_to_link(MAC_table[dest_mac_string], length, data)
+            else:
+                for interf in interfaces:
+                    if interf != interface:
+                        send_to_link(interf, length, data)
+        else:
+            for interf in interfaces:
+                if interf != interface:
+                    send_to_link(interf, length, data)
+
+
+
         # TODO: Implement VLAN support
         # TODO: Implement STP support
 
